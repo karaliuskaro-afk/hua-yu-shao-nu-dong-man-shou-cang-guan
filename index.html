@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>花与少女的动漫收藏馆</title>
+<style>
+:root{--bg:#0f0f14;--card-bg:#1a1a24;--text:#e8e0d8;--accent:#e8a0b4;--accent2:#a0c4e8;--border:#2a2a3a;--hover:#252535}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei',sans-serif;min-height:100vh}
+header{background:linear-gradient(180deg,#1a1020 0%,var(--bg) 100%);padding:60px 20px 40px;text-align:center;border-bottom:1px solid var(--border)}
+header h1{font-size:2em;color:var(--accent);font-weight:400;letter-spacing:2px;margin-bottom:12px}
+header p{color:#888;font-size:.95em;max-width:500px;margin:0 auto;line-height:1.8}
+header .quote{color:var(--accent);opacity:.6;font-style:italic;margin-top:16px;font-size:.85em}
+nav{position:sticky;top:0;z-index:100;background:rgba(15,15,20,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 20px}
+nav .inner{max-width:1200px;margin:0 auto;display:flex;overflow-x:auto}
+nav button{background:none;border:none;color:#888;padding:16px 24px;cursor:pointer;font-size:.95em;white-space:nowrap;transition:all .3s;font-family:inherit;position:relative}
+nav button:hover{color:var(--text)}
+nav button.active{color:var(--accent)}
+nav button.active::after{content:'';position:absolute;bottom:0;left:24px;right:24px;height:2px;background:var(--accent);border-radius:1px}
+.search-bar{max-width:1200px;margin:20px auto;padding:0 20px}
+.search-bar input{width:100%;padding:14px 20px;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:1em;outline:none;font-family:inherit;transition:border-color .3s}
+.search-bar input:focus{border-color:var(--accent)}.search-bar input::placeholder{color:#555}
+.container{max-width:1200px;margin:0 auto;padding:0 20px 40px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}
+.tag-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.tag-filter span{padding:6px 14px;border-radius:20px;background:var(--card-bg);border:1px solid var(--border);cursor:pointer;font-size:.85em;transition:all .3s;user-select:none}
+.tag-filter span:hover,.tag-filter span.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.card{background:var(--card-bg);border-radius:12px;overflow:hidden;cursor:pointer;border:1px solid var(--border);transition:all .3s}
+.card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 8px 30px rgba(232,160,180,.1)}
+.card .cover{aspect-ratio:3/4;background:linear-gradient(135deg,#1a1a2e,#1e1e30);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.card .cover img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
+.card .cover .placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;color:#444;font-size:.8em;z-index:1}
+.card .cover .placeholder svg{opacity:.15;width:40px;height:40px}
+.card .cover .status-badge{position:absolute;top:8px;right:8px;padding:3px 8px;border-radius:6px;font-size:.7em;font-weight:500;z-index:2}
+.card .cover .status-badge.ok{background:rgba(76,175,80,.2);color:#4caf50}
+.card .cover .status-badge.warn{background:rgba(255,152,0,.2);color:#ff9800}
+.card .cover .badge-row{position:absolute;bottom:8px;left:8px;display:flex;gap:4px;flex-wrap:wrap;z-index:2}
+.card .cover .badge-row .badge{padding:2px 6px;border-radius:4px;font-size:.65em;font-weight:600}
+.badge-bdmv{background:rgba(100,149,237,.25);color:#6495ed}
+.badge-special{background:rgba(232,160,180,.25);color:var(--accent)}
+.badge-new{background:rgba(76,175,80,.2);color:#4caf50}
+.card .info{padding:12px 14px}
+.card .info h3{font-size:.9em;font-weight:400;margin-bottom:4px;line-height:1.4;color:var(--text)}
+.card .info .meta{font-size:.75em;color:#666;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.card .info .meta .tag{color:var(--accent2);font-size:.7em}
+.card .info .season{font-size:.7em;color:#888;margin-top:3px}
+.modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.8);backdrop-filter:blur(4px)}
+.modal-overlay.show{display:flex;align-items:center;justify-content:center}
+.modal{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;max-width:640px;width:92%;max-height:85vh;overflow-y:auto;padding:30px;position:relative;animation:slideUp .3s ease}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.modal h2{color:var(--accent);font-weight:400;font-size:1.3em;margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-right:40px}
+.modal h2 .md-badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:.55em;font-weight:600;letter-spacing:.5px;line-height:1.6}
+.modal .season-tabs{display:flex;gap:6px;margin:16px 0 20px;flex-wrap:wrap}
+.modal .season-tabs button{padding:6px 16px;border-radius:8px;background:var(--bg);border:1px solid var(--border);color:#888;cursor:pointer;font-size:.85em;font-family:inherit;transition:all .3s}
+.modal .season-tabs button:hover{color:var(--text);border-color:var(--accent)}
+.modal .season-tabs button.active{background:rgba(232,160,180,.15);color:var(--accent);border-color:var(--accent)}
+.modal .detail-row{display:flex;padding:11px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.modal .detail-row .label{color:#777;width:72px;flex-shrink:0;font-size:.85em;padding-top:1px}
+.modal .detail-row .value{color:var(--text);font-size:.9em;line-height:1.6;flex:1}
+.modal .detail-row .value a{color:var(--accent2);text-decoration:none;word-break:break-all}
+.modal .detail-row .value a:hover{text-decoration:underline}
+.modal .detail-row .value .code{display:inline-block;padding:4px 10px;background:rgba(232,160,180,.1);border-radius:6px;font-family:'Courier New',monospace;font-size:.85em;letter-spacing:1px;color:var(--accent)}
+.modal .close-btn{position:sticky;top:0;float:right;background:none;border:none;color:#888;font-size:1.5em;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:10;margin:-8px -8px 0 0}
+.modal .close-btn:hover{background:var(--hover);color:var(--text)}
+.no-results{display:none;text-align:center;padding:40px;color:#666}.no-results.show{display:block}
+footer{text-align:center;padding:40px 20px;color:#444;font-size:.8em;border-top:1px solid var(--border);margin-top:40px}
+</style>
+</head>
+<body>
+<header>
+  <h1>花与少女的动漫收藏馆</h1>
+  <p>冷门老番整理归档 · 断种稀缺资源打捞 · 持续更新的动漫资源目录</p>
+  <div class="quote">「旧馆翻新，花刚好开了。你在馆里问，它在架上找。」</div>
+</header>
+<nav>
+  <div class="inner">
+    <button class="active" onclick="switchTab('anime',this)">🎬 动漫资源</button>
+    <button onclick="switchTab('music',this)">🎵 音乐资源</button>
+    <button onclick="switchTab('comic',this)">📚 漫画资源</button>
+    <button onclick="switchTab('sale',this)">💎 在售资源</button>
+    <button onclick="switchTab('group',this)">👥 群友资源</button>
+  </div>
+</nav>
+<div class="search-bar">
+  <input type="text" id="searchInput" placeholder="搜索资源名称、标签..." oninput="render()">
+</div>
+<div class="container">
+  <div class="tag-filter" id="tagFilter"></div>
+  <div class="grid" id="grid"></div>
+  <div class="no-results" id="noResults">🌸 没有找到匹配的资源，换个关键词试试？</div>
+</div>
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+<footer>
+  <p>藏品来自互联网公开渠道，仅供同好交流。请支持正版。</p>
+  <p style="margin-top:8px">—— 馆主，花耀日</p>
+</footer>
+
+<script>
+let siteData={anime:[],music:[],comic:[],sale:[],group:[]};
+let currentTab='anime',currentTag='all';
+fetch('data.json').then(r=>r.json()).then(d=>{siteData=d;render()}).catch(()=>render());
+function B(b){if(b==='BDMV')return'badge-bdmv';if(b.includes('纪念')||b.includes('百人'))return'badge-special';if(b.includes('NEW'))return'badge-new';return'badge-hot'}
+function S(tab,btn){currentTab=tab;currentTag='all';document.getElementById('searchInput').value='';document.querySelectorAll('nav button').forEach(b=>b.className='');btn.className='active';render()}
+function T(tag){currentTag=tag;render()}
+function render(){
+  const items=siteData[currentTab]||[];
+  const all=[...new Set(items.flatMap(i=>i.tags))];
+  let tf='<span class="'+(currentTag==='all'?'active':'')+'" onclick="T(\'all\')">全部</span>';
+  all.forEach(t=>{tf+='<span class="'+(currentTag===t?'active':'')+'" onclick="T(\''+t+'\')">'+t+'</span>'});
+  document.getElementById('tagFilter').innerHTML=tf;
+  let f=currentTag==='all'?items:items.filter(i=>i.tags.includes(currentTag));
+  const kw=document.getElementById('searchInput').value.toLowerCase();
+  if(kw)f=f.filter(i=>i.title.toLowerCase().includes(kw)||i.tags.some(t=>t.includes(kw))||(i.desc||'').toLowerCase().includes(kw));
+  if(!f.length){document.getElementById('grid').innerHTML='';document.getElementById('noResults').classList.add('show');return}
+  document.getElementById('noResults').classList.remove('show');
+  let h='';
+  f.forEach((item,i)=>{
+    const oi=items.indexOf(item);
+    let bb=item.badges?item.badges.map(b=>'<span class="badge '+B(b)+'">'+b+'</span>').join(''):'';
+    h+=`<div class="card" onclick="D('${currentTab}',${oi})"><div class="cover">${item.cover?`<img src="${item.cover}" alt="">`:''}<div class="placeholder"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>封面留白 · 手动上传</span></div><div class="status-badge ${item.status==='pending'?'warn':'ok'}">${item.status==='pending'?'待补档':'可下载'}</div>${bb?'<div class="badge-row">'+bb+'</div>':''}</div><div class="info"><h3>${item.title}</h3><div class="meta"><span>${item.year||''}</span>${item.tags.slice(0,2).map(t=>'<span class="tag">'+t+'</span>').join('')}</div>${item.seasons&&item.seasons.length?'<div class="season">共 '+item.seasons.length+' 季</div>':''}</div></div>`;
+  });
+  document.getElementById('grid').innerHTML=h;
+}
+function D(tab,idx){
+  const items=siteData[tab],item=items[idx];
+  const tabs={anime:'🎬 动漫资源',music:'🎵 音乐资源',comic:'📚 漫画资源',sale:'💎 在售资源',group:'👥 群友资源'};
+  const isA=tab==='anime'&&item.seasons&&item.seasons.length>0;
+  let bd=item.badges?item.badges.map(b=>'<span class="md-badge '+B(b)+'">'+b+'</span>').join(''):'';
+  let st='',body='';
+  if(isA){st='<div class="season-tabs">'+item.seasons.map((s,i)=>'<button class="'+(i===0?'active':'')+'" onclick="SS('+i+')">'+s.name+'</button>').join('')+'</div>';body=A(item,0)}
+  else{body=G(item,tab)}
+  document.getElementById('modalContent').innerHTML='<button class="close-btn" onclick="closeModal()">✕</button><h2>'+item.title+' '+bd+'</h2>'+st+'<div id="seasonDetail">'+body+'</div>';
+  document.getElementById('modalOverlay').classList.add('show');window._M=item;
+}
+function A(item,si){const s=item.seasons[si];return`<div class="detail-row"><span class="label">年份</span><span class="value">${item.year||'—'}</span></div><div class="detail-row"><span class="label">标签</span><span class="value">${(item.tags||[]).join(' · ')}</span></div><div class="detail-row"><span class="label">状态</span><span class="value">${item.status==='pending'?'⏳ 待补档':'✅ 可下载'}</span></div><div class="detail-row"><span class="label">类别</span><span class="value">🎬 动漫资源 · ${s.name}</span></div><div class="detail-row"><span class="label">简介</span><span class="value">${item.desc||'—'}</span></div><div class="detail-row"><span class="label">下载链接</span><span class="value">${s.download&&s.download.startsWith('http')?`<a href="${s.download}" target="_blank">${s.download}</a>`:s.download&&s.download!=='待定'?`<span style="color:#ff9800">${s.download}</span>`:'<span style="color:#ff9800">待定</span>'}</span></div><div class="detail-row"><span class="label">提取码</span><span class="value">${s.code&&s.code!=='待定'?`<span class="code">${s.code}</span>`:'<span style="color:#ff9800">待定</span>'}</span></div><div class="detail-row"><span class="label">答疑文档</span><span class="value">${s.faq?`<a href="${s.faq}" target="_blank">📄 点击查看答疑文档</a>`:'<span style="color:#555">暂无</span>'}</span></div>`}
+function G(item,tab){const tabs={anime:'🎬 动漫资源',music:'🎵 音乐资源',comic:'📚 漫画资源',sale:'💎 在售资源',group:'👥 群友资源'};return`<div class="detail-row"><span class="label">年份</span><span class="value">${item.year||'—'}</span></div><div class="detail-row"><span class="label">标签</span><span class="value">${(item.tags||[]).join(' · ')}</span></div><div class="detail-row"><span class="label">状态</span><span class="value">${item.status==='pending'?'⏳ 待补充':'✅ 可用'}</span></div><div class="detail-row"><span class="label">类别</span><span class="value">${tabs[tab]}</span></div><div class="detail-row"><span class="label">简介</span><span class="value">${item.desc||'—'}</span></div>`}
+function SS(idx){document.getElementById('seasonDetail').innerHTML=A(window._M,idx);const btns=document.querySelectorAll('.season-tabs button');btns.forEach(b=>b.className='');btns[idx].className='active'}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
+</script>
+</body>
+</html>
